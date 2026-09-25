@@ -16,7 +16,11 @@ import { useWorkflows } from "@/features/workflows/hooks/useWorkflows";
 
 export function useHomePage() {
   const user = useCurrentUser();
-  const {\n    counts: todoCounts,\n    loading: todosLoading,\n    todos,\n  } = useTodoData({
+  const {
+    counts: todoCounts,
+    loading: todosLoading,
+    todos,
+  } = useTodoData({
     filters: { due_today: true },
   });
   const { getIntegrationStatus } = useIntegrations();
