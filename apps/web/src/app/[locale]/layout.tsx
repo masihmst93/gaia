@@ -24,6 +24,7 @@ const OG_LOCALE_MAP: Record<string, string> = {
   ja: "ja_JP",
   ko: "ko_KR",
   "pt-BR": "pt_BR",
+  fa: "fa_IR",
 };
 
 type Props = {
@@ -156,7 +157,11 @@ export default async function LocaleLayout({ children, params }: Props) {
   setRequestLocale(locale);
 
   return (
-    <html lang={locale} className={`${getAllFontVariables()} dark`}>
+    <html
+      lang={locale}
+      dir={locale === "fa" ? "rtl" : "ltr"}
+      className={`${getAllFontVariables()} dark`}
+    >
       <head>
         <link
           rel="preconnect"
