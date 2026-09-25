@@ -8,8 +8,7 @@ from dataclasses import dataclass
 
 
 @dataclass(frozen=True)
-class PersonalRoutine:
-    id: str
+class PersonalRoutine:\n    """A scheduled personal-agent routine shipped as a product default."""\n\n    id: str
     title_fa: str
     title_en: str
     cron: str
@@ -64,6 +63,3 @@ MASIH_PERSONAL_ROUTINES: tuple[PersonalRoutine, ...] = (
     ),
 )
 
-
-def routine_by_id(routine_id: str) -> PersonalRoutine | None:
-    return next((routine for routine in MASIH_PERSONAL_ROUTINES if routine.id == routine_id), None)
