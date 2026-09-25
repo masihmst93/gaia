@@ -88,6 +88,7 @@ class TestTheTableIsWellFormed:
     def test_comms_receives_exactly_these_sections_in_this_order(self) -> None:
         """Spelled out rather than merely "sorted": the two run banners sort LAST on purpose, for recency before the conversation begins."""
         assert [s.id for s in sections_for(AgentTier.COMMS, PromptSlot.DYNAMIC_STABLE)] == [
+            "masih_personal_agent",
             "user_identity",
             "user_prefs",
             "new_user_guidance",
@@ -112,6 +113,7 @@ class TestTheTableIsWellFormed:
         # Redis-cached 12h, so it was re-read for nothing in the volatile slot.
         # A mid-conversation skill install breaks the prefix once, same trade as integrations_manifest.
         assert [s.id for s in sections_for(AgentTier.EXECUTOR, PromptSlot.DYNAMIC_STABLE)] == [
+            "masih_personal_agent",
             "user_identity",
             "user_prefs",
             "workspace_session",
