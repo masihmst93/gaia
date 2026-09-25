@@ -6,17 +6,17 @@ import {
   integrationConnectionState,
 } from "@shared/utils";
 import { useCurrentUser } from "@/features/auth/hooks/useCurrentUser";
-import { calculateDailyProgress } from "@/features/progress/calculateDailyProgress";
 import { useCalendarsQuery } from "@/features/calendar/hooks/useCalendarsQuery";
 import { useUpcomingEventsQuery } from "@/features/calendar/hooks/useUpcomingEventsQuery";
 import { useIntegrations } from "@/features/integrations/hooks/useIntegrations";
 import { useUnreadEmailsQuery } from "@/features/mail/hooks/useUnreadEmailsQuery";
+import { calculateDailyProgress } from "@/features/progress/calculateDailyProgress";
 import { useTodoData } from "@/features/todo/hooks/useTodoData";
 import { useWorkflows } from "@/features/workflows/hooks/useWorkflows";
 
 export function useHomePage() {
   const user = useCurrentUser();
-  const { counts: todoCounts, loading: todosLoading, todos } = useTodoData({
+  const {\n    counts: todoCounts,\n    loading: todosLoading,\n    todos,\n  } = useTodoData({
     filters: { due_today: true },
   });
   const { getIntegrationStatus } = useIntegrations();
