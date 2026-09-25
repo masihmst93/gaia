@@ -166,6 +166,7 @@ function DashboardSummary({
 }
 
 export default function HomePage() {
+  const router = useRouter();
   const params = useParams<{ locale?: string }>();
   const isPersian = params?.locale === "fa";
   const {
@@ -175,6 +176,7 @@ export default function HomePage() {
     hasData,
     hasTodayItems,
     counts,
+    dailyProgress,
     events,
     calendars,
     unreadEmails,
@@ -232,6 +234,55 @@ export default function HomePage() {
           </p>
         )}
       </div>
+
+      <section className="mb-8 grid gap-3 px-3 sm:grid-cols-3">
+        <div className="rounded-2xl border border-zinc-800 bg-zinc-950/60 p-5 sm:col-span-2">
+          <div className="mb-3 flex items-center justify-between gap-4">
+            <div>
+              <p className="text-sm text-zinc-500">
+                {isPersian ? "پیشرفت امروز" : "Today's progress"}
+              </p>
+              <p className="mt-1 text-3xl font-semibold text-white">
+                {dailyProgress.percent}%
+              </p>
+            </div>
+            <p className="max-w-56 text-sm text-zinc-500">
+              {isPersian
+                ? "بر اساس کارهای امروز و وزن اولویت آن‌ها محاسبه می‌شود."
+                : "Calculated from today's tasks and their priority weights."}
+            </p>
+          </div>
+          <div
+            className="h-2 overflow-hidden rounded-full bg-zinc-800"
+            role="progressbar"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={dailyProgress.percent}
+          >
+            <div
+              className="h-full rounded-full bg-white transition-[width]"
+              style={{ width: `${dailyProgress.percent}%` }}
+            />
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={() => router.push("/c")}
+          className="rounded-2xl border border-zinc-800 bg-zinc-950/60 p-5 text-start transition hover:border-zinc-700 hover:bg-zinc-900"
+        >
+          <p className="text-sm text-zinc-500">
+            {isPersian ? "دستیار روزانه" : "Daily assistant"}
+          </p>
+          <p className="mt-2 text-lg font-medium text-white">
+            {isPersian ? "برنامه امروز من را بچین" : "Plan my day"}
+          </p>
+          <p className="mt-1 text-sm text-zinc-500">
+            {isPersian
+              ? "تقویم، کارها و اولویت‌ها را یک‌جا بررسی کن."
+              : "Review calendar, tasks and priorities together."}
+          </p>
+        </button>
+      </section>
 
       <DashboardComposer isPersian={isPersian} />
 
