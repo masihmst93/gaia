@@ -22,14 +22,15 @@ import { DashboardTodoItem } from "./DashboardTodoItem";
 const ACCENT = "#00bbff";
 
 function getGreeting(): string {
+  // Personal Agent mobile defaults to Persian for Masih.
   const hour = new Date().getHours();
-  if (hour < 12) return "Good morning";
-  if (hour < 17) return "Good afternoon";
-  return "Good evening";
+  if (hour < 12) return "صبح بخیر";
+  if (hour < 17) return "عصر بخیر";
+  return "شب بخیر";
 }
 
 function formatDate(): string {
-  return new Date().toLocaleDateString("en-US", {
+  return new Date().toLocaleDateString("fa-IR", {
     weekday: "long",
     month: "long",
     day: "numeric",
@@ -37,25 +38,25 @@ function formatDate(): string {
 }
 
 function formatReminderTime(nextRunAt: string | undefined): string {
-  if (!nextRunAt) return "Scheduled";
+  if (!nextRunAt) return "زمان‌بندی شده";
   const date = new Date(nextRunAt);
   const now = new Date();
   const diffMs = date.getTime() - now.getTime();
   const diffMins = Math.round(diffMs / 60000);
 
-  if (diffMins < 0) return "Overdue";
-  if (diffMins < 60) return `In ${diffMins}m`;
+  if (diffMins < 0) return "عقب‌افتاده";
+  if (diffMins < 60) return `${diffMins} دقیقه دیگر`;
   const diffHours = Math.round(diffMins / 60);
-  if (diffHours < 24) return `In ${diffHours}h`;
-  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  if (diffHours < 24) return `${diffHours} ساعت دیگر`;
+  return date.toLocaleDateString("fa-IR", { month: "short", day: "numeric" });
 }
 
 const QUERY_KEYS = {
   todayTodos: ["dashboard", "today-todos"] as const,
   recentConversations: ["dashboard", "recent-conversations"] as const,
-  unreadCount: ["dashboard", "unread-count"] as const,
+  خوانده‌نشدهCount: ["dashboard", "unread-count"] as const,
   upcomingReminders: ["dashboard", "upcoming-reminders"] as const,
-  activeWorkflows: ["dashboard", "active-workflows"] as const,
+  فعالاتوماسیون‌ها: ["dashboard", "active-workflows"] as const,
 };
 
 type TodayTodo = Awaited<ReturnType<typeof dashboardApi.getTodayTodos>>[number];
@@ -115,7 +116,7 @@ function TodosCardBody({
         <Button.Label
           style={{ fontSize: fontSize.xs, color: ACCENT, fontWeight: "500" }}
         >
-          View all tasks
+          مشاهده همه کارها
         </Button.Label>
       </Button>
     </>
@@ -312,12 +313,12 @@ export function DashboardScreen() {
   const router = useRouter();
   const { user } = useAuth();
 
-  const firstName = user?.name?.split(" ")[0] ?? "there";
+  const firstName = user?.name?.split(" ")[0] ?? "مسیح";
 
   const [
     todosQuery,
     conversationsQuery,
-    unreadQuery,
+    خوانده‌نشدهQuery,
     remindersQuery,
     workflowsQuery,
   ] = useQueries({
@@ -343,8 +344,8 @@ export function DashboardScreen() {
         staleTime: 5 * 60 * 1000,
       },
       {
-        queryKey: QUERY_KEYS.activeWorkflows,
-        queryFn: dashboardApi.getActiveWorkflowsCount,
+        queryKey: QUERY_KEYS.activeاتوماسیون‌ها,
+        queryFn: dashboardApi.getActiveاتوماسیون‌هاCount,
         staleTime: 5 * 60 * 1000,
       },
     ],
@@ -353,29 +354,29 @@ export function DashboardScreen() {
   const isRefreshing =
     todosQuery.isRefetching ||
     conversationsQuery.isRefetching ||
-    unreadQuery.isRefetching ||
+    خوانده‌نشدهQuery.isRefetching ||
     remindersQuery.isRefetching ||
     workflowsQuery.isRefetching;
 
   const handleRefresh = useCallback(() => {
     void todosQuery.refetch();
     void conversationsQuery.refetch();
-    void unreadQuery.refetch();
+    void خوانده‌نشدهQuery.refetch();
     void remindersQuery.refetch();
     void workflowsQuery.refetch();
   }, [
     todosQuery,
     conversationsQuery,
-    unreadQuery,
+    خوانده‌نشدهQuery,
     remindersQuery,
     workflowsQuery,
   ]);
 
   const todayTodos = todosQuery.data ?? [];
   const conversations = conversationsQuery.data ?? [];
-  const unreadCount = unreadQuery.data ?? 0;
+  const خوانده‌نشدهCount = خوانده‌نشدهQuery.data ?? 0;
   const reminders = remindersQuery.data ?? [];
-  const activeWorkflowCount = workflowsQuery.data ?? 0;
+  const فعالWorkflowCount = workflowsQuery.data ?? 0;
 
   return (
     <View style={{ flex: 1, backgroundColor: "#111111" }}>
@@ -404,7 +405,7 @@ export function DashboardScreen() {
               color: "#f4f4f5",
             }}
           >
-            {getGreeting()}, {firstName}!
+            {getGreeting()}، {firstName}
           </Text>
           <Text
             style={{
@@ -419,13 +420,13 @@ export function DashboardScreen() {
 
         {/* Today's Todos */}
         <DashboardCard
-          title="Today's Tasks"
+          title="کارهای امروز"
           icon={CheckListIcon}
           iconColor="#22c55e"
           badge={todosQuery.data?.length}
           subtitle={
             todayTodos.length === 0 && !todosQuery.isLoading
-              ? "No tasks due today"
+              ? "برای امروز کاری ثبت نشده"
               : undefined
           }
           onPress={() => {
@@ -435,15 +436,15 @@ export function DashboardScreen() {
           <TodosCardBody todos={todayTodos} isLoading={todosQuery.isLoading} />
         </DashboardCard>
 
-        {/* Upcoming Reminders */}
+        {/* یادآوری‌های پیش رو */}
         <DashboardCard
-          title="Upcoming Reminders"
+          title="یادآوری‌های پیش رو"
           icon={AlarmClockIcon}
           iconColor="#f59e0b"
           badge={reminders.length > 0 ? reminders.length : undefined}
           subtitle={
             reminders.length === 0 && !remindersQuery.isLoading
-              ? "No upcoming reminders"
+              ? "یادآوری فعالی نداری"
               : undefined
           }
           onPress={undefined}
@@ -456,12 +457,12 @@ export function DashboardScreen() {
 
         {/* Recent Conversations */}
         <DashboardCard
-          title="Recent Chats"
+          title="گفت‌وگوهای اخیر"
           icon={BubbleChatIcon}
           iconColor={ACCENT}
           subtitle={
             conversations.length === 0 && !conversationsQuery.isLoading
-              ? "No recent conversations"
+              ? "هنوز گفت‌وگویی ثبت نشده"
               : undefined
           }
           onPress={() => {
@@ -474,19 +475,19 @@ export function DashboardScreen() {
           />
         </DashboardCard>
 
-        {/* Active Workflows + Unread Notifications — side by side */}
+        {/* Active اتوماسیون‌ها + Unread Notifications — side by side */}
         <View style={{ flexDirection: "row", gap: spacing.sm }}>
-          {/* Active Workflows */}
+          {/* Active اتوماسیون‌ها */}
           <View style={{ flex: 1 }}>
             <DashboardCard
-              title="Workflows"
+              title="اتوماسیون‌ها"
               icon={ZapIcon}
               iconColor="#a78bfa"
-              badge={activeWorkflowCount > 0 ? activeWorkflowCount : undefined}
+              badge={activeWorkflowCount > 0 ? فعالWorkflowCount : undefined}
               subtitle={
                 <StatSubtitle
                   isLoading={workflowsQuery.isLoading}
-                  text={`${activeWorkflowCount} active`}
+                  text={`${activeWorkflowCount} فعال`}
                 />
               }
               onPress={() => {
@@ -498,15 +499,15 @@ export function DashboardScreen() {
           {/* Unread Notifications */}
           <View style={{ flex: 1 }}>
             <DashboardCard
-              title="Alerts"
+              title="اعلان‌ها"
               icon={Notification01Icon}
               iconColor="#f43f5e"
-              badge={unreadCount > 0 ? unreadCount : undefined}
+              badge={unreadCount > 0 ? خوانده‌نشدهCount : undefined}
               subtitle={
                 <StatSubtitle
                   isLoading={unreadQuery.isLoading}
                   text={
-                    unreadCount > 0 ? `${unreadCount} unread` : "All caught up"
+                    خوانده‌نشدهCount > 0 ? `${unreadCount} خوانده‌نشده` : "همه‌چیز بررسی شده"
                   }
                 />
               }
