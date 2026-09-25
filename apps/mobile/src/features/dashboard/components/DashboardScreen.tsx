@@ -56,7 +56,7 @@ const QUERY_KEYS = {
   recentConversations: ["dashboard", "recent-conversations"] as const,
   unreadCount: ["dashboard", "unread-count"] as const,
   upcomingReminders: ["dashboard", "upcoming-reminders"] as const,
-  فعالاتوماسیون‌ها: ["dashboard", "active-workflows"] as const,
+  activeWorkflows: ["dashboard", "active-workflows"] as const,
 };
 
 type TodayTodo = Awaited<ReturnType<typeof dashboardApi.getTodayTodos>>[number];
