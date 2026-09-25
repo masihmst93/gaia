@@ -9,13 +9,13 @@ import {
   Mail01Icon,
   ZapIcon,
 } from "@icons";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import { GridSection } from "@/features/chat/components/interface/sections/GridSection";
 import DummyComposer from "@/features/landing/components/demo/DummyComposer";
 import { useHomePage } from "@/hooks/useHomePage";
 
-function DashboardComposer() {
+function DashboardComposer({ isPersian }: { isPersian: boolean }) {
   const router = useRouter();
 
   return (
@@ -36,7 +36,7 @@ function DashboardComposer() {
         type="button"
         className="absolute inset-0 z-10 w-full cursor-text border-0 bg-transparent p-0"
         onClick={() => router.push("/c")}
-        aria-label="Start a conversation"
+        aria-label={isPersian ? "شروع گفتگو" : "Start a conversation"}
       />
     </div>
   );
@@ -62,41 +62,41 @@ function buildDashboardSections({
   overdueTodosCount,
   unreadEmailsCount,
   activeWorkflows,
-}: DashboardCounts): DashboardSection[] {
+}: DashboardCounts, isPersian = false): DashboardSection[] {
   const sections: DashboardSection[] = [];
   if (todaysMeetings > 0) {
     sections.push({
       icon: <Calendar03Icon className="w-7 h-7 text-blue-400" />,
       count: todaysMeetings,
-      label: todaysMeetings === 1 ? "meeting" : "meetings",
+      label: isPersian ? "جلسه" : todaysMeetings === 1 ? "meeting" : "meetings",
     });
   }
   if (tasksDue > 0) {
     sections.push({
       icon: <CheckmarkCircle02Icon className="w-7 h-7 text-emerald-400" />,
       count: tasksDue,
-      label: tasksDue === 1 ? "task due" : "tasks due",
+      label: isPersian ? "کار امروز" : tasksDue === 1 ? "task due" : "tasks due",
     });
   }
   if (overdueTodosCount > 0) {
     sections.push({
       icon: <Alert01Icon className="w-7 h-7 text-red-500" />,
       count: overdueTodosCount,
-      label: overdueTodosCount === 1 ? "overdue task" : "overdue tasks",
+      label: isPersian ? "کار عقب‌افتاده" : overdueTodosCount === 1 ? "overdue task" : "overdue tasks",
     });
   }
   if (unreadEmailsCount > 0) {
     sections.push({
       icon: <Mail01Icon className="w-7 h-7 text-sky-400" />,
       count: unreadEmailsCount,
-      label: unreadEmailsCount === 1 ? "unread email" : "unread emails",
+      label: isPersian ? "ایمیل خوانده‌نشده" : unreadEmailsCount === 1 ? "unread email" : "unread emails",
     });
   }
   if (activeWorkflows > 0) {
     sections.push({
       icon: <ZapIcon className="w-7 h-7 text-amber-500" />,
       count: activeWorkflows,
-      label: activeWorkflows === 1 ? "workflow" : "workflows",
+      label: isPersian ? "اتوماسیون فعال" : activeWorkflows === 1 ? "workflow" : "workflows",
     });
   }
   return sections;
@@ -115,9 +115,11 @@ function SummaryItem({ icon, count, label }: DashboardSection) {
 function DashboardSummary({
   sections,
   hasTodayItems,
+  isPersian,
 }: {
   sections: DashboardSection[];
   hasTodayItems: boolean;
+  isPersian: boolean;
 }) {
   const firstLineSections = sections.slice(0, 2);
   const secondLineSections = sections.slice(2);
@@ -125,14 +127,14 @@ function DashboardSummary({
   return (
     <div className="flex flex-col gap-1">
       <div className="flex flex-wrap items-center gap-x-1.5 gap-y-2 text-3xl text-zinc-500">
-        <span>You have</span>
+        <span>{isPersian ? "امروز داری" : "You have"}</span>
         {firstLineSections.map((section, index) => (
           <span key={section.label}>
             <SummaryItem {...section} />
             {index < firstLineSections.length - 1 && <span>,</span>}
             {index === firstLineSections.length - 1 &&
               secondLineSections.length === 0 &&
-              hasTodayItems && <span> today</span>}
+              hasTodayItems && !isPersian && <span> today</span>}
             {index === firstLineSections.length - 1 &&
               secondLineSections.length === 0 &&
               !hasTodayItems && <span>.</span>}
@@ -148,8 +150,8 @@ function DashboardSummary({
             <span key={section.label}>
               <SummaryItem {...section} />
               {index < secondLineSections.length - 1 && <span>,</span>}
-              {index === secondLineSections.length - 2 && <span> and</span>}
-              {index === secondLineSections.length - 1 && hasTodayItems && (
+              {index === secondLineSections.length - 2 && !isPersian && <span> and</span>}
+              {index === secondLineSections.length - 1 && hasTodayItems && !isPersian && (
                 <span> today.</span>
               )}
               {index === secondLineSections.length - 1 && !hasTodayItems && (
@@ -164,6 +166,8 @@ function DashboardSummary({
 }
 
 export default function HomePage() {
+  const params = useParams<{ locale?: string }>();
+  const isPersian = params?.locale === "fa";
   const {
     user,
     simpleGreeting,
@@ -186,14 +190,14 @@ export default function HomePage() {
   } = useHomePage();
 
   // Build sections array for display
-  const sections = buildDashboardSections(counts);
+  const sections = buildDashboardSections(counts, isPersian);
 
   return (
     <div className="flex flex-col p-6 pt-0 min-h-screen h-fit overflow-y-scroll outline-none">
       <div className="flex flex-col p-3 mb-6 space-y-1">
         <div className="flex items-center gap-3 mb-5">
           <h2 className="text-4xl font-medium text-zinc-700">
-            {simpleGreeting}
+            {isPersian ? "سلام" : simpleGreeting}
           </h2>
           <div className="flex items-center gap-2">
             {user?.profilePicture && (
@@ -217,15 +221,19 @@ export default function HomePage() {
             <Skeleton className="h-7 w-[50vw] rounded-lg" />
           </div>
         ) : hasData ? (
-          <DashboardSummary sections={sections} hasTodayItems={hasTodayItems} />
+          <DashboardSummary
+            sections={sections}
+            hasTodayItems={hasTodayItems}
+            isPersian={isPersian}
+          />
         ) : (
           <p className="text-lg text-zinc-400">
-            Your day is clear — time to plan ahead!
+            {isPersian ? "امروزت هنوز خالیه — بیا برنامه‌اش رو بچینیم." : "Your day is clear — time to plan ahead!"}
           </p>
         )}
       </div>
 
-      <DashboardComposer />
+      <DashboardComposer isPersian={isPersian} />
 
       <GridSection
         events={events}
