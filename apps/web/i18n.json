@@ -3,12 +3,20 @@
   "version": "1.10",
   "locale": {
     "source": "en",
-    "targets": ["es", "fr", "de", "ja", "ko", "pt-BR"]
+    "targets": [
+      "es",
+      "fr",
+      "de",
+      "ja",
+      "ko",
+      "pt-BR",
+      "fa"
+    ]
   },
   "provider": {
     "id": "google",
     "model": "gemini-2.5-flash-lite",
-    "prompt": "Translate from {source} to {target}. Keep brand names like GAIA, HeyGAIA, LangGraph, ChromaDB, and product names (Gmail, Slack, Notion, etc.) untranslated. Keep technical terms and URLs unchanged."
+    "prompt": "Translate from {source} to {target}. Keep brand names like GAIA, HeyGAIA, LangGraph, ChromaDB, and product names (Gmail, Slack, Notion, etc.) untranslated. Keep technical terms and URLs unchanged. For Persian (fa), use natural modern Persian suitable for a personal productivity assistant and preserve placeholders exactly."
   },
   "buckets": {
     "json": {
