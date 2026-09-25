@@ -1,4 +1,4 @@
-import { useQueries } from "@tanstack/react-query";
+import { useQueries, type UseQueryResult } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { Button, Skeleton, SkeletonGroup } from "heroui-native";
 import { useCallback } from "react";
@@ -307,6 +307,33 @@ function StatSubtitle({
   );
 }
 
+type DashboardContentProps = {
+  firstName: string;
+  spacing: ReturnType<typeof useResponsive>["spacing"];
+  fontSize: ReturnType<typeof useResponsive>["fontSize"];
+  insets: ReturnType<typeof useSafeAreaInsets>;
+  router: ReturnType<typeof useRouter>;
+  todosQuery: UseQueryResult<TodayTodo[]>;
+  conversationsQuery: UseQueryResult<RecentConversation[]>;
+  unreadQuery: UseQueryResult<number>;
+  remindersQuery: UseQueryResult<UpcomingReminder[]>;
+  workflowsQuery: UseQueryResult<number>;
+  isRefreshing: boolean;
+  handleRefresh: () => void;
+};
+
+function emptySubtitle(
+  count: number,
+  isLoading: boolean,
+  text: string,
+): string | undefined {
+  return count === 0 && !isLoading ? text : undefined;
+}
+
+function positiveBadge(count: number): number | undefined {
+  return count > 0 ? count : undefined;
+}
+
 function DashboardContent({
   firstName,
   spacing,
@@ -320,20 +347,139 @@ function DashboardContent({
   workflowsQuery,
   isRefreshing,
   handleRefresh,
-}: any) {
+}: DashboardContentProps) {
   const todayTodos = todosQuery.data ?? [];
   const conversations = conversationsQuery.data ?? [];
   const unreadCount = unreadQuery.data ?? 0;
   const reminders = remindersQuery.data ?? [];
   const activeWorkflowCount = workflowsQuery.data ?? 0;
+
   return (
     <View style={{ flex: 1, backgroundColor: "#111111" }}>
-      <ScrollView contentContainerStyle={{ paddingTop: insets.top + spacing.md, paddingBottom: insets.bottom + spacing.xl, paddingHorizontal: spacing.md }} showsVerticalScrollIndicator={false} refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} tintColor={ACCENT} colors={[ACCENT]} />}>
-        <View style={{ marginBottom: spacing.lg }}><Text style={{ fontSize: fontSize["2xl"], fontWeight: "700", color: "#f4f4f5" }}>{getGreeting()}، {firstName}</Text><Text style={{ fontSize: fontSize.sm, color: "#71717a", marginTop: 4 }}>{formatDate()}</Text></View>
-        <DashboardCard title="کارهای امروز" icon={CheckListIcon} iconColor="#22c55e" badge={todosQuery.data?.length} subtitle={todayTodos.length === 0 && !todosQuery.isLoading ? "برای امروز کاری ثبت نشده" : undefined} onPress={() => router.push("/(app)/(tabs)/todos")}><TodosCardBody todos={todayTodos} isLoading={todosQuery.isLoading} /></DashboardCard>
-        <DashboardCard title="یادآوری‌های پیش رو" icon={AlarmClockIcon} iconColor="#f59e0b" badge={reminders.length > 0 ? reminders.length : undefined} subtitle={reminders.length === 0 && !remindersQuery.isLoading ? "یادآوری فعالی نداری" : undefined}><RemindersCardBody reminders={reminders} isLoading={remindersQuery.isLoading} /></DashboardCard>
-        <DashboardCard title="گفت‌وگوهای اخیر" icon={BubbleChatIcon} iconColor={ACCENT} subtitle={conversations.length === 0 && !conversationsQuery.isLoading ? "هنوز گفت‌وگویی ثبت نشده" : undefined} onPress={() => router.push("/(app)/(tabs)")}><ConversationsCardBody conversations={conversations} isLoading={conversationsQuery.isLoading} /></DashboardCard>
-        <View style={{ flexDirection: "row", gap: spacing.sm }}><View style={{ flex: 1 }}><DashboardCard title="اتوماسیون‌ها" icon={ZapIcon} iconColor="#a78bfa" badge={activeWorkflowCount > 0 ? activeWorkflowCount : undefined} subtitle={<StatSubtitle isLoading={workflowsQuery.isLoading} text={`${activeWorkflowCount} فعال`} />} onPress={() => router.push("/(app)/(tabs)/workflows")} /></View><View style={{ flex: 1 }}><DashboardCard title="اعلان‌ها" icon={Notification01Icon} iconColor="#f43f5e" badge={unreadCount > 0 ? unreadCount : undefined} subtitle={<StatSubtitle isLoading={unreadQuery.isLoading} text={unreadCount > 0 ? `${unreadCount} خوانده‌نشده` : "همه‌چیز بررسی شده"} />} onPress={() => router.push("/(app)/(tabs)/notifications")} /></View></View>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={handleRefresh}
+            tintColor={ACCENT}
+            colors={[ACCENT]}
+          />
+        }
+      >
+        <View
+          style={{
+            paddingTop: insets.top + spacing.md,
+            paddingBottom: insets.bottom + spacing.xl,
+            paddingHorizontal: spacing.md,
+          }}
+        >
+          <View style={{ marginBottom: spacing.lg }}>
+            <Text
+              style={{
+                fontSize: fontSize["2xl"],
+                fontWeight: "700",
+                color: "#f4f4f5",
+              }}
+            >
+              {getGreeting()}، {firstName}
+            </Text>
+            <Text
+              style={{ fontSize: fontSize.sm, color: "#71717a", marginTop: 4 }}
+            >
+              {formatDate()}
+            </Text>
+          </View>
+
+          <DashboardCard
+            title="کارهای امروز"
+            icon={CheckListIcon}
+            iconColor="#22c55e"
+            badge={todosQuery.data?.length}
+            subtitle={emptySubtitle(
+              todayTodos.length,
+              todosQuery.isLoading,
+              "برای امروز کاری ثبت نشده",
+            )}
+            onPress={() => router.push("/(app)/(tabs)/todos")}
+          >
+            <TodosCardBody
+              todos={todayTodos}
+              isLoading={todosQuery.isLoading}
+            />
+          </DashboardCard>
+
+          <DashboardCard
+            title="یادآوری‌های پیش رو"
+            icon={AlarmClockIcon}
+            iconColor="#f59e0b"
+            badge={positiveBadge(reminders.length)}
+            subtitle={emptySubtitle(
+              reminders.length,
+              remindersQuery.isLoading,
+              "یادآوری فعالی نداری",
+            )}
+          >
+            <RemindersCardBody
+              reminders={reminders}
+              isLoading={remindersQuery.isLoading}
+            />
+          </DashboardCard>
+
+          <DashboardCard
+            title="گفت‌وگوهای اخیر"
+            icon={BubbleChatIcon}
+            iconColor={ACCENT}
+            subtitle={emptySubtitle(
+              conversations.length,
+              conversationsQuery.isLoading,
+              "هنوز گفت‌وگویی ثبت نشده",
+            )}
+            onPress={() => router.push("/(app)/(tabs)")}
+          >
+            <ConversationsCardBody
+              conversations={conversations}
+              isLoading={conversationsQuery.isLoading}
+            />
+          </DashboardCard>
+
+          <View style={{ flexDirection: "row", gap: spacing.sm }}>
+            <View style={{ flex: 1 }}>
+              <DashboardCard
+                title="اتوماسیون‌ها"
+                icon={ZapIcon}
+                iconColor="#a78bfa"
+                badge={positiveBadge(activeWorkflowCount)}
+                subtitle={
+                  <StatSubtitle
+                    isLoading={workflowsQuery.isLoading}
+                    text={`${activeWorkflowCount} فعال`}
+                  />
+                }
+                onPress={() => router.push("/(app)/(tabs)/workflows")}
+              />
+            </View>
+            <View style={{ flex: 1 }}>
+              <DashboardCard
+                title="اعلان‌ها"
+                icon={Notification01Icon}
+                iconColor="#f43f5e"
+                badge={positiveBadge(unreadCount)}
+                subtitle={
+                  <StatSubtitle
+                    isLoading={unreadQuery.isLoading}
+                    text={
+                      unreadCount > 0
+                        ? `${unreadCount} خوانده‌نشده`
+                        : "همه‌چیز بررسی شده"
+                    }
+                  />
+                }
+                onPress={() => router.push("/(app)/(tabs)/notifications")}
+              />
+            </View>
+          </View>
+        </View>
       </ScrollView>
     </View>
   );
@@ -403,12 +549,6 @@ export function DashboardScreen() {
     remindersQuery,
     workflowsQuery,
   ]);
-
-  const todayTodos = todosQuery.data ?? [];
-  const conversations = conversationsQuery.data ?? [];
-  const unreadCount = unreadQuery.data ?? 0;
-  const reminders = remindersQuery.data ?? [];
-  const activeWorkflowCount = workflowsQuery.data ?? 0;
 
   return <DashboardContent firstName={firstName} spacing={spacing} fontSize={fontSize} insets={insets} router={router} todosQuery={todosQuery} conversationsQuery={conversationsQuery} unreadQuery={unreadQuery} remindersQuery={remindersQuery} workflowsQuery={workflowsQuery} isRefreshing={isRefreshing} handleRefresh={handleRefresh} />;
 }
