@@ -165,6 +165,40 @@ function DashboardSummary({
   );
 }
 
+function TodayOverview({
+  isPersian,
+  dailyProgress,
+  todayTasks,
+  counts,
+}: {
+  isPersian: boolean;
+  dailyProgress: { percent: number };
+  todayTasks: ReturnType<typeof useHomePage>["todayTodos"];
+  counts: ReturnType<typeof useHomePage>["counts"];
+}) {
+  const router = useRouter();
+  return (
+    <>
+      <section className="mb-8 grid gap-3 px-3 sm:grid-cols-3">
+        <div className="rounded-2xl border border-zinc-800 bg-zinc-950/60 p-5 sm:col-span-2">
+          <div className="mb-3 flex items-center justify-between gap-4">
+            <div><p className="text-sm text-zinc-500">{isPersian ? "پیشرفت امروز" : "Today's progress"}</p><p className="mt-1 text-3xl font-semibold text-white">{dailyProgress.percent}%</p></div>
+          </div>
+          <div className="h-2 overflow-hidden rounded-full bg-zinc-800"><div className="h-full rounded-full bg-white" style={{ width: `${dailyProgress.percent}%` }} /></div>
+        </div>
+        <button type="button" onClick={() => router.push("/c")} className="rounded-2xl border border-zinc-800 bg-zinc-950/60 p-5 text-start"><p className="text-sm text-zinc-500">{isPersian ? "دستیار روزانه" : "Daily assistant"}</p><p className="mt-2 text-lg font-medium text-white">{isPersian ? "برنامه امروز من را بچین" : "Plan my day"}</p></button>
+      </section>
+      <section className="mb-8 grid gap-3 px-3 lg:grid-cols-[1.5fr_1fr]">
+        <div className="rounded-2xl border border-zinc-800 bg-zinc-950/60 p-5">
+          <div className="mb-4 flex items-center justify-between"><h2 className="text-xl font-semibold text-white">{isPersian ? "کارهای امروز" : "Today's tasks"}</h2><button type="button" onClick={() => router.push("/todos")} className="text-sm text-zinc-400">{isPersian ? "مشاهده همه" : "View all"}</button></div>
+          <div className="space-y-2">{todayTasks.map(todo => <button key={todo.id} type="button" onClick={() => router.push(`/todos?todoId=${todo.id}`)} className="flex w-full items-center gap-3 rounded-xl border border-zinc-800/80 bg-zinc-900/40 px-4 py-3 text-start"><span className={`size-2.5 rounded-full ${todo.completed ? "bg-emerald-400" : "bg-zinc-600"}`} /><span className="min-w-0 flex-1 truncate text-sm text-zinc-200">{todo.title}</span></button>)}</div>
+        </div>
+        <div className="rounded-2xl border border-zinc-800 bg-zinc-950/60 p-5"><h2 className="text-xl font-semibold text-white">{isPersian ? "وضعیت امروز" : "Today at a glance"}</h2><div className="mt-5 space-y-3 text-sm text-zinc-400"><p>{isPersian ? "جلسه" : "Meetings"}: {counts.todaysMeetings}</p><p>{isPersian ? "ایمیل خوانده‌نشده" : "Unread email"}: {counts.unreadEmailsCount}</p><p>{isPersian ? "عقب‌افتاده" : "Overdue"}: {counts.overdueTodosCount}</p></div></div>
+      </section>
+    </>
+  );
+}
+
 export default function HomePage() {
   const router = useRouter();
   const params = useParams<{ locale?: string }>();
@@ -240,160 +274,7 @@ export default function HomePage() {
         )}
       </div>
 
-      <section className="mb-8 grid gap-3 px-3 sm:grid-cols-3">
-        <div className="rounded-2xl border border-zinc-800 bg-zinc-950/60 p-5 sm:col-span-2">
-          <div className="mb-3 flex items-center justify-between gap-4">
-            <div>
-              <p className="text-sm text-zinc-500">
-                {isPersian ? "پیشرفت امروز" : "Today's progress"}
-              </p>
-              <p className="mt-1 text-3xl font-semibold text-white">
-                {dailyProgress.percent}%
-              </p>
-            </div>
-            <p className="max-w-56 text-sm text-zinc-500">
-              {isPersian
-                ? "بر اساس کارهای امروز و وزن اولویت آن‌ها محاسبه می‌شود."
-                : "Calculated from today's tasks and their priority weights."}
-            </p>
-          </div>
-          <div className="mt-4 flex items-center gap-5">
-            <div
-              className="relative grid size-24 shrink-0 place-items-center rounded-full"
-              role="progressbar"
-              aria-label={isPersian ? "درصد پیشرفت امروز" : "Today's progress"}
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-valuenow={dailyProgress.percent}
-              style={{
-                background: `conic-gradient(currentColor ${dailyProgress.percent}%, rgb(39 39 42) 0)`,
-              }}
-            >
-              <div className="grid size-20 place-items-center rounded-full bg-zinc-950">
-                <span className="text-xl font-semibold text-white">
-                  {dailyProgress.percent}%
-                </span>
-              </div>
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="mb-2 flex items-center justify-between text-xs text-zinc-500">
-                <span>{isPersian ? "شروع" : "Start"}</span>
-                <span>{isPersian ? "تکمیل" : "Complete"}</span>
-              </div>
-              <div className="h-2 overflow-hidden rounded-full bg-zinc-800">
-                <div
-                  className="h-full rounded-full bg-white transition-[width]"
-                  style={{ width: `${dailyProgress.percent}%` }}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-        <button
-          type="button"
-          onClick={() => router.push("/c")}
-          className="rounded-2xl border border-zinc-800 bg-zinc-950/60 p-5 text-start transition hover:border-zinc-700 hover:bg-zinc-900"
-        >
-          <p className="text-sm text-zinc-500">
-            {isPersian ? "دستیار روزانه" : "Daily assistant"}
-          </p>
-          <p className="mt-2 text-lg font-medium text-white">
-            {isPersian ? "برنامه امروز من را بچین" : "Plan my day"}
-          </p>
-          <p className="mt-1 text-sm text-zinc-500">
-            {isPersian
-              ? "تقویم، کارها و اولویت‌ها را یک‌جا بررسی کن."
-              : "Review calendar, tasks and priorities together."}
-          </p>
-        </button>
-      </section>
-
-      <section className="mb-8 grid gap-3 px-3 lg:grid-cols-[1.5fr_1fr]">
-        <div className="rounded-2xl border border-zinc-800 bg-zinc-950/60 p-5">
-          <div className="mb-4 flex items-center justify-between">
-            <div>
-              <p className="text-sm text-zinc-500">
-                {isPersian ? "مرکز فرمان امروز" : "Today's command center"}
-              </p>
-              <h2 className="mt-1 text-xl font-semibold text-white">
-                {isPersian ? "کارهای امروز" : "Today's tasks"}
-              </h2>
-            </div>
-            <button
-              type="button"
-              onClick={() => router.push("/todos")}
-              className="text-sm text-zinc-400 transition hover:text-white"
-            >
-              {isPersian ? "مشاهده همه" : "View all"}
-            </button>
-          </div>
-          {todayTasks.length > 0 ? (
-            <div className="space-y-2">
-              {todayTasks.map((todo) => (
-                <button
-                  key={todo.id}
-                  type="button"
-                  onClick={() => router.push(`/todos?todoId=${todo.id}`)}
-                  className="flex w-full items-center gap-3 rounded-xl border border-zinc-800/80 bg-zinc-900/40 px-4 py-3 text-start transition hover:bg-zinc-900"
-                >
-                  <span
-                    className={`size-2.5 shrink-0 rounded-full ${
-                      todo.completed ? "bg-emerald-400" : "bg-zinc-600"
-                    }`}
-                  />
-                  <span
-                    className={`min-w-0 flex-1 truncate text-sm ${
-                      todo.completed ? "text-zinc-500 line-through" : "text-zinc-200"
-                    }`}
-                  >
-                    {todo.title}
-                  </span>
-                  {todo.priority && todo.priority !== "none" && (
-                    <span className="rounded-full bg-zinc-800 px-2 py-1 text-[11px] text-zinc-400">
-                      {todo.priority}
-                    </span>
-                  )}
-                </button>
-              ))}
-            </div>
-          ) : (
-            <div className="rounded-xl border border-dashed border-zinc-800 px-4 py-8 text-center text-sm text-zinc-500">
-              {isPersian
-                ? "برای امروز هنوز کاری ثبت نشده."
-                : "No tasks are scheduled for today yet."}
-            </div>
-          )}
-        </div>
-
-        <div className="rounded-2xl border border-zinc-800 bg-zinc-950/60 p-5">
-          <p className="text-sm text-zinc-500">
-            {isPersian ? "گزارش سریع" : "Quick review"}
-          </p>
-          <h2 className="mt-1 text-xl font-semibold text-white">
-            {isPersian ? "وضعیت امروز" : "Today at a glance"}
-          </h2>
-          <div className="mt-5 space-y-3">
-            <div className="flex items-center justify-between rounded-xl bg-zinc-900/50 p-3">
-              <span className="text-sm text-zinc-400">{isPersian ? "پیشرفت" : "Progress"}</span>
-              <strong className="text-white">{dailyProgress.percent}%</strong>
-            </div>
-            <div className="flex items-center justify-between rounded-xl bg-zinc-900/50 p-3">
-              <span className="text-sm text-zinc-400">{isPersian ? "جلسه" : "Meetings"}</span>
-              <strong className="text-white">{counts.todaysMeetings}</strong>
-            </div>
-            <div className="flex items-center justify-between rounded-xl bg-zinc-900/50 p-3">
-              <span className="text-sm text-zinc-400">{isPersian ? "ایمیل خوانده‌نشده" : "Unread email"}</span>
-              <strong className="text-white">{counts.unreadEmailsCount}</strong>
-            </div>
-            <div className="flex items-center justify-between rounded-xl bg-zinc-900/50 p-3">
-              <span className="text-sm text-zinc-400">{isPersian ? "عقب‌افتاده" : "Overdue"}</span>
-              <strong className="text-white">{counts.overdueTodosCount}</strong>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <DashboardComposer isPersian={isPersian} />
+      <TodayOverview isPersian={isPersian} dailyProgress={dailyProgress} todayTasks={todayTasks} counts={counts} />\n\n      <DashboardComposer isPersian={isPersian} />
 
       <GridSection
         events={events}
