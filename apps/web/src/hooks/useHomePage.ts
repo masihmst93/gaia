@@ -6,6 +6,7 @@ import {
   integrationConnectionState,
 } from "@shared/utils";
 import { useCurrentUser } from "@/features/auth/hooks/useCurrentUser";
+import { calculateDailyProgress } from "@/features/progress/calculateDailyProgress";
 import { useCalendarsQuery } from "@/features/calendar/hooks/useCalendarsQuery";
 import { useUpcomingEventsQuery } from "@/features/calendar/hooks/useUpcomingEventsQuery";
 import { useIntegrations } from "@/features/integrations/hooks/useIntegrations";
@@ -15,7 +16,7 @@ import { useWorkflows } from "@/features/workflows/hooks/useWorkflows";
 
 export function useHomePage() {
   const user = useCurrentUser();
-  const { counts: todoCounts, loading: todosLoading } = useTodoData();
+  const { counts: todoCounts, loading: todosLoading, todos } = useTodoData();
   const { getIntegrationStatus } = useIntegrations();
 
   // Check integrations. The state (not just the boolean) drives the CTA verb, so
@@ -62,6 +63,11 @@ export function useHomePage() {
   const activeWorkflows =
     workflows?.filter((w) => w.activated === true).length || 0;
   const tasksDue = todoCounts?.today || 0;
+  const todayTodos = todos.filter((todo) => {
+    if (!todo.due_date) return false;
+    return new Date(todo.due_date).toDateString() === today;
+  });
+  const dailyProgress = calculateDailyProgress(todayTodos);
   const overdueTodosCount = todoCounts?.overdue || 0;
   const unreadEmailsCount = unreadEmails?.length || 0;
 
@@ -87,6 +93,7 @@ export function useHomePage() {
     isLoading,
     hasData,
     hasTodayItems,
+    dailyProgress,
     counts: {
       todaysMeetings,
       tasksDue,
