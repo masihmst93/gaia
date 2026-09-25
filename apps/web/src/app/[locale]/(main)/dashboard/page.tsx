@@ -10,8 +10,6 @@ import {
   ZapIcon,
 } from "@icons";
 import { useParams, useRouter } from "next/navigation";
-import { useMemo } from "react";
-import { useTodoData } from "@/features/todo/hooks/useTodoData";
 import type { ReactNode } from "react";
 import { GridSection } from "@/features/chat/components/interface/sections/GridSection";
 import DummyComposer from "@/features/landing/components/demo/DummyComposer";
@@ -171,14 +169,6 @@ export default function HomePage() {
   const router = useRouter();
   const params = useParams<{ locale?: string }>();
   const isPersian = params?.locale === "fa";
-  const { todos } = useTodoData();
-  const todayTasks = useMemo(() => {
-    const today = new Date().toDateString();
-    return todos
-      .filter((todo) => todo.due_date && new Date(todo.due_date).toDateString() === today)
-      .sort((a, b) => Number(a.completed) - Number(b.completed))
-      .slice(0, 6);
-  }, [todos]);
   const {
     user,
     simpleGreeting,
@@ -187,6 +177,7 @@ export default function HomePage() {
     hasTodayItems,
     counts,
     dailyProgress,
+    todayTodos,
     events,
     calendars,
     unreadEmails,
@@ -200,6 +191,10 @@ export default function HomePage() {
     hasMoreEmails,
     emailsFetchingMore,
   } = useHomePage();
+
+  const todayTasks = [...todayTodos]
+    .sort((a, b) => Number(a.completed) - Number(b.completed))
+    .slice(0, 6);
 
   // Build sections array for display
   const sections = buildDashboardSections(counts, isPersian);
