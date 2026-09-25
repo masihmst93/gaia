@@ -252,17 +252,36 @@ export default function HomePage() {
                 : "Calculated from today's tasks and their priority weights."}
             </p>
           </div>
-          <div
-            className="h-2 overflow-hidden rounded-full bg-zinc-800"
-            role="progressbar"
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-valuenow={dailyProgress.percent}
-          >
+          <div className="mt-4 flex items-center gap-5">
             <div
-              className="h-full rounded-full bg-white transition-[width]"
-              style={{ width: `${dailyProgress.percent}%` }}
-            />
+              className="relative grid size-24 shrink-0 place-items-center rounded-full"
+              role="progressbar"
+              aria-label={isPersian ? "درصد پیشرفت امروز" : "Today's progress"}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={dailyProgress.percent}
+              style={{
+                background: `conic-gradient(currentColor ${dailyProgress.percent}%, rgb(39 39 42) 0)`,
+              }}
+            >
+              <div className="grid size-20 place-items-center rounded-full bg-zinc-950">
+                <span className="text-xl font-semibold text-white">
+                  {dailyProgress.percent}%
+                </span>
+              </div>
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="mb-2 flex items-center justify-between text-xs text-zinc-500">
+                <span>{isPersian ? "شروع" : "Start"}</span>
+                <span>{isPersian ? "تکمیل" : "Complete"}</span>
+              </div>
+              <div className="h-2 overflow-hidden rounded-full bg-zinc-800">
+                <div
+                  className="h-full rounded-full bg-white transition-[width]"
+                  style={{ width: `${dailyProgress.percent}%` }}
+                />
+              </div>
+            </div>
           </div>
         </div>
         <button
