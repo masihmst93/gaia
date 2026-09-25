@@ -56,47 +56,61 @@ interface DashboardCounts {
   activeWorkflows: number;
 }
 
-function buildDashboardSections({
-  todaysMeetings,
-  tasksDue,
-  overdueTodosCount,
-  unreadEmailsCount,
-  activeWorkflows,
-}: DashboardCounts, isPersian = false): DashboardSection[] {
+function dashboardLabel(
+  isPersian: boolean,
+  persian: string,
+  count: number,
+  singular: string,
+  plural: string,
+): string {
+  if (isPersian) return persian;
+  return count === 1 ? singular : plural;
+}
+
+function buildDashboardSections(
+  {
+    todaysMeetings,
+    tasksDue,
+    overdueTodosCount,
+    unreadEmailsCount,
+    activeWorkflows,
+  }: DashboardCounts,
+  isPersian = false,
+): DashboardSection[] {
   const sections: DashboardSection[] = [];
   if (todaysMeetings > 0) {
     sections.push({
       icon: <Calendar03Icon className="w-7 h-7 text-blue-400" />,
       count: todaysMeetings,
-      label: isPersian ? "جلسه" : todaysMeetings === 1 ? "meeting" : "meetings",
+      label: dashboardLabel(isPersian, "جلسه", todaysMeetings, "meeting", "meetings"),
     });
   }
   if (tasksDue > 0) {
     sections.push({
       icon: <CheckmarkCircle02Icon className="w-7 h-7 text-emerald-400" />,
       count: tasksDue,
-      label: isPersian ? "کار امروز" : tasksDue === 1 ? "task due" : "tasks due",
+      label: dashboardLabel(isPersian, "کار امروز", tasksDue, "task due", "tasks due"),
     });
   }
   if (overdueTodosCount > 0) {
     sections.push({
       icon: <Alert01Icon className="w-7 h-7 text-red-500" />,
       count: overdueTodosCount,
-      label: isPersian ? "کار عقب‌افتاده" : overdueTodosCount === 1 ? "overdue task" : "overdue tasks",
+      label: dashboardLabel(\n        isPersian,\n        "کار عقب‌افتاده",\n        overdueTodosCount,\n        "overdue task",\n        "overdue tasks",\n      ),
     });
   }
   if (unreadEmailsCount > 0) {
     sections.push({
       icon: <Mail01Icon className="w-7 h-7 text-sky-400" />,
       count: unreadEmailsCount,
-      label: isPersian ? "ایمیل خوانده‌نشده" : unreadEmailsCount === 1 ? "unread email" : "unread emails",
+      label: dashboardLabel(\n        isPersian,\n        "ایمیل خوانده‌نشده",\n        unreadEmailsCount,\n        "unread email",\n        "unread emails",\n      ),
     });
   }
   if (activeWorkflows > 0) {
     sections.push({
       icon: <ZapIcon className="w-7 h-7 text-amber-500" />,
       count: activeWorkflows,
-      label: isPersian ? "اتوماسیون فعال" : activeWorkflows === 1 ? "workflow" : "workflows",
+      label: dashboardLabel(\n        isPersian,\n        "اتوماسیون فعال",\n        activeWorkflows,\n        "workflow",\n        "workflows",\n      ),
     });
   }
   return sections;
