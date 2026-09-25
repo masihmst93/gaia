@@ -96,21 +96,39 @@ function buildDashboardSections(
     sections.push({
       icon: <Alert01Icon className="w-7 h-7 text-red-500" />,
       count: overdueTodosCount,
-      label: dashboardLabel(\n        isPersian,\n        "کار عقب‌افتاده",\n        overdueTodosCount,\n        "overdue task",\n        "overdue tasks",\n      ),
+      label: dashboardLabel(
+        isPersian,
+        "کار عقب‌افتاده",
+        overdueTodosCount,
+        "overdue task",
+        "overdue tasks",
+      ),
     });
   }
   if (unreadEmailsCount > 0) {
     sections.push({
       icon: <Mail01Icon className="w-7 h-7 text-sky-400" />,
       count: unreadEmailsCount,
-      label: dashboardLabel(\n        isPersian,\n        "ایمیل خوانده‌نشده",\n        unreadEmailsCount,\n        "unread email",\n        "unread emails",\n      ),
+      label: dashboardLabel(
+        isPersian,
+        "ایمیل خوانده‌نشده",
+        unreadEmailsCount,
+        "unread email",
+        "unread emails",
+      ),
     });
   }
   if (activeWorkflows > 0) {
     sections.push({
       icon: <ZapIcon className="w-7 h-7 text-amber-500" />,
       count: activeWorkflows,
-      label: dashboardLabel(\n        isPersian,\n        "اتوماسیون فعال",\n        activeWorkflows,\n        "workflow",\n        "workflows",\n      ),
+      label: dashboardLabel(
+        isPersian,
+        "اتوماسیون فعال",
+        activeWorkflows,
+        "workflow",
+        "workflows",
+      ),
     });
   }
   return sections;
@@ -288,7 +306,9 @@ export default function HomePage() {
         )}
       </div>
 
-      <TodayOverview isPersian={isPersian} dailyProgress={dailyProgress} todayTasks={todayTasks} counts={counts} />\n\n      <DashboardComposer isPersian={isPersian} />
+      <TodayOverview isPersian={isPersian} dailyProgress={dailyProgress} todayTasks={todayTasks} counts={counts} />
+
+      <DashboardComposer isPersian={isPersian} />
 
       <GridSection
         events={events}
