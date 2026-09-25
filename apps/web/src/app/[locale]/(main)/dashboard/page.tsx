@@ -10,6 +10,8 @@ import {
   ZapIcon,
 } from "@icons";
 import { useParams, useRouter } from "next/navigation";
+import { useMemo } from "react";
+import { useTodoData } from "@/features/todo/hooks/useTodoData";
 import type { ReactNode } from "react";
 import { GridSection } from "@/features/chat/components/interface/sections/GridSection";
 import DummyComposer from "@/features/landing/components/demo/DummyComposer";
@@ -169,6 +171,14 @@ export default function HomePage() {
   const router = useRouter();
   const params = useParams<{ locale?: string }>();
   const isPersian = params?.locale === "fa";
+  const { todos } = useTodoData();
+  const todayTasks = useMemo(() => {
+    const today = new Date().toDateString();
+    return todos
+      .filter((todo) => todo.due_date && new Date(todo.due_date).toDateString() === today)
+      .sort((a, b) => Number(a.completed) - Number(b.completed))
+      .slice(0, 6);
+  }, [todos]);
   const {
     user,
     simpleGreeting,
@@ -301,6 +311,91 @@ export default function HomePage() {
               : "Review calendar, tasks and priorities together."}
           </p>
         </button>
+      </section>
+
+      <section className="mb-8 grid gap-3 px-3 lg:grid-cols-[1.5fr_1fr]">
+        <div className="rounded-2xl border border-zinc-800 bg-zinc-950/60 p-5">
+          <div className="mb-4 flex items-center justify-between">
+            <div>
+              <p className="text-sm text-zinc-500">
+                {isPersian ? "مرکز فرمان امروز" : "Today's command center"}
+              </p>
+              <h2 className="mt-1 text-xl font-semibold text-white">
+                {isPersian ? "کارهای امروز" : "Today's tasks"}
+              </h2>
+            </div>
+            <button
+              type="button"
+              onClick={() => router.push("/todos")}
+              className="text-sm text-zinc-400 transition hover:text-white"
+            >
+              {isPersian ? "مشاهده همه" : "View all"}
+            </button>
+          </div>
+          {todayTasks.length > 0 ? (
+            <div className="space-y-2">
+              {todayTasks.map((todo) => (
+                <button
+                  key={todo.id}
+                  type="button"
+                  onClick={() => router.push(`/todos?todoId=${todo.id}`)}
+                  className="flex w-full items-center gap-3 rounded-xl border border-zinc-800/80 bg-zinc-900/40 px-4 py-3 text-start transition hover:bg-zinc-900"
+                >
+                  <span
+                    className={`size-2.5 shrink-0 rounded-full ${
+                      todo.completed ? "bg-emerald-400" : "bg-zinc-600"
+                    }`}
+                  />
+                  <span
+                    className={`min-w-0 flex-1 truncate text-sm ${
+                      todo.completed ? "text-zinc-500 line-through" : "text-zinc-200"
+                    }`}
+                  >
+                    {todo.title}
+                  </span>
+                  {todo.priority && todo.priority !== "none" && (
+                    <span className="rounded-full bg-zinc-800 px-2 py-1 text-[11px] text-zinc-400">
+                      {todo.priority}
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-xl border border-dashed border-zinc-800 px-4 py-8 text-center text-sm text-zinc-500">
+              {isPersian
+                ? "برای امروز هنوز کاری ثبت نشده."
+                : "No tasks are scheduled for today yet."}
+            </div>
+          )}
+        </div>
+
+        <div className="rounded-2xl border border-zinc-800 bg-zinc-950/60 p-5">
+          <p className="text-sm text-zinc-500">
+            {isPersian ? "گزارش سریع" : "Quick review"}
+          </p>
+          <h2 className="mt-1 text-xl font-semibold text-white">
+            {isPersian ? "وضعیت امروز" : "Today at a glance"}
+          </h2>
+          <div className="mt-5 space-y-3">
+            <div className="flex items-center justify-between rounded-xl bg-zinc-900/50 p-3">
+              <span className="text-sm text-zinc-400">{isPersian ? "پیشرفت" : "Progress"}</span>
+              <strong className="text-white">{dailyProgress.percent}%</strong>
+            </div>
+            <div className="flex items-center justify-between rounded-xl bg-zinc-900/50 p-3">
+              <span className="text-sm text-zinc-400">{isPersian ? "جلسه" : "Meetings"}</span>
+              <strong className="text-white">{counts.todaysMeetings}</strong>
+            </div>
+            <div className="flex items-center justify-between rounded-xl bg-zinc-900/50 p-3">
+              <span className="text-sm text-zinc-400">{isPersian ? "ایمیل خوانده‌نشده" : "Unread email"}</span>
+              <strong className="text-white">{counts.unreadEmailsCount}</strong>
+            </div>
+            <div className="flex items-center justify-between rounded-xl bg-zinc-900/50 p-3">
+              <span className="text-sm text-zinc-400">{isPersian ? "عقب‌افتاده" : "Overdue"}</span>
+              <strong className="text-white">{counts.overdueTodosCount}</strong>
+            </div>
+          </div>
+        </div>
       </section>
 
       <DashboardComposer isPersian={isPersian} />
