@@ -54,7 +54,7 @@ function formatReminderTime(nextRunAt: string | undefined): string {
 const QUERY_KEYS = {
   todayTodos: ["dashboard", "today-todos"] as const,
   recentConversations: ["dashboard", "recent-conversations"] as const,
-  خوانده‌نشدهCount: ["dashboard", "unread-count"] as const,
+  unreadCount: ["dashboard", "unread-count"] as const,
   upcomingReminders: ["dashboard", "upcoming-reminders"] as const,
   فعالاتوماسیون‌ها: ["dashboard", "active-workflows"] as const,
 };
@@ -318,7 +318,7 @@ export function DashboardScreen() {
   const [
     todosQuery,
     conversationsQuery,
-    خوانده‌نشدهQuery,
+    unreadQuery,
     remindersQuery,
     workflowsQuery,
   ] = useQueries({
@@ -344,8 +344,8 @@ export function DashboardScreen() {
         staleTime: 5 * 60 * 1000,
       },
       {
-        queryKey: QUERY_KEYS.activeاتوماسیون‌ها,
-        queryFn: dashboardApi.getActiveاتوماسیون‌هاCount,
+        queryKey: QUERY_KEYS.activeWorkflows,
+        queryFn: dashboardApi.getActiveWorkflowsCount,
         staleTime: 5 * 60 * 1000,
       },
     ],
@@ -354,29 +354,29 @@ export function DashboardScreen() {
   const isRefreshing =
     todosQuery.isRefetching ||
     conversationsQuery.isRefetching ||
-    خوانده‌نشدهQuery.isRefetching ||
+    unreadQuery.isRefetching ||
     remindersQuery.isRefetching ||
     workflowsQuery.isRefetching;
 
   const handleRefresh = useCallback(() => {
     void todosQuery.refetch();
     void conversationsQuery.refetch();
-    void خوانده‌نشدهQuery.refetch();
+    void unreadQuery.refetch();
     void remindersQuery.refetch();
     void workflowsQuery.refetch();
   }, [
     todosQuery,
     conversationsQuery,
-    خوانده‌نشدهQuery,
+    unreadQuery,
     remindersQuery,
     workflowsQuery,
   ]);
 
   const todayTodos = todosQuery.data ?? [];
   const conversations = conversationsQuery.data ?? [];
-  const خوانده‌نشدهCount = خوانده‌نشدهQuery.data ?? 0;
+  const unreadCount = unreadQuery.data ?? 0;
   const reminders = remindersQuery.data ?? [];
-  const فعالWorkflowCount = workflowsQuery.data ?? 0;
+  const activeWorkflowCount = workflowsQuery.data ?? 0;
 
   return (
     <View style={{ flex: 1, backgroundColor: "#111111" }}>
@@ -483,7 +483,7 @@ export function DashboardScreen() {
               title="اتوماسیون‌ها"
               icon={ZapIcon}
               iconColor="#a78bfa"
-              badge={activeWorkflowCount > 0 ? فعالWorkflowCount : undefined}
+              badge={activeWorkflowCount > 0 ? activeWorkflowCount : undefined}
               subtitle={
                 <StatSubtitle
                   isLoading={workflowsQuery.isLoading}
@@ -502,12 +502,12 @@ export function DashboardScreen() {
               title="اعلان‌ها"
               icon={Notification01Icon}
               iconColor="#f43f5e"
-              badge={unreadCount > 0 ? خوانده‌نشدهCount : undefined}
+              badge={unreadCount > 0 ? unreadCount : undefined}
               subtitle={
                 <StatSubtitle
                   isLoading={unreadQuery.isLoading}
                   text={
-                    خوانده‌نشدهCount > 0 ? `${unreadCount} خوانده‌نشده` : "همه‌چیز بررسی شده"
+                    unreadCount > 0 ? `${unreadCount} خوانده‌نشده` : "همه‌چیز بررسی شده"
                   }
                 />
               }
