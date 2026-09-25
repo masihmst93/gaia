@@ -16,7 +16,9 @@ import { useWorkflows } from "@/features/workflows/hooks/useWorkflows";
 
 export function useHomePage() {
   const user = useCurrentUser();
-  const { counts: todoCounts, loading: todosLoading, todos } = useTodoData();
+  const { counts: todoCounts, loading: todosLoading, todos } = useTodoData({
+    filters: { due_today: true },
+  });
   const { getIntegrationStatus } = useIntegrations();
 
   // Check integrations. The state (not just the boolean) drives the CTA verb, so
@@ -94,6 +96,7 @@ export function useHomePage() {
     hasData,
     hasTodayItems,
     dailyProgress,
+    todayTodos,
     counts: {
       todaysMeetings,
       tasksDue,
