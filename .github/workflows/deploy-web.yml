@@ -274,7 +274,8 @@ jobs:
           # Worker exists. Wrangler 4.135+ is required for this command.
           output="$(pnpm dlx wrangler@4.135.0 preview --name "pr-${{ github.event.number }}" --config apps/web/wrangler.jsonc --json)"
           printf '%s\n' "$output"
-          preview_url="$(printf '%s' "$output" | jq -er '.preview.urls[0]')"
+          json="$(printf '%s\n' "$output" | awk 'found || /^\{/ {found=1; print}')"
+          preview_url="$(printf '%s' "$json" | jq -er '.preview.urls[0] // .deployment.urls[0]')"
           echo "preview_url=$preview_url" >> "$GITHUB_OUTPUT"
 
       - name: Report preview duration
