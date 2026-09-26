@@ -29,8 +29,8 @@ from app.agents.context.fetchers import (
     build_tracked_todos_block,
     build_workspace_session_banner,
 )
-from app.agents.context.section_context import SectionContext
 from app.agents.context.masih_personal_agent import MASIH_PERSONAL_AGENT_INSTRUCTIONS
+from app.agents.context.section_context import SectionContext
 from app.agents.context.slots import PromptSlot
 from app.agents.context.text import (
     CONNECTED_DEVICES_HEADER,
