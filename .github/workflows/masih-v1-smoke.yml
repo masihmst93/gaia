@@ -1,0 +1,31 @@
+name: Masih V1 Smoke
+
+on:
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  web-mobile-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.15.1
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Web progress unit test
+        run: pnpm --filter web exec vitest run src/__tests__/daily-progress.test.ts
+      - name: Web typecheck
+        run: pnpm --filter web typecheck
+      - name: Mobile typecheck
+        run: pnpm --filter mobile typecheck

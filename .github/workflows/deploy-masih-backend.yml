@@ -1,0 +1,148 @@
+name: Deploy Masih Personal Backend
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: masih-personal-backend
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: preview
+    steps:
+      - name: Validate required configuration
+        env:
+          VPS_HOST: ${{ secrets.MASIH_VPS_HOST }}
+          VPS_USER: ${{ secrets.MASIH_VPS_USER }}
+          VPS_KEY: ${{ secrets.MASIH_VPS_SSH_KEY }}
+          BACKEND_ENV: ${{ secrets.MASIH_BACKEND_ENV }}
+          BACKEND_DOMAIN: ${{ vars.MASIH_BACKEND_DOMAIN }}
+        run: |
+          set -euo pipefail
+          for name in VPS_HOST VPS_USER VPS_KEY BACKEND_ENV BACKEND_DOMAIN; do
+            [ -n "${!name}" ] || { echo "::error::Missing $name"; exit 1; }
+          done
+
+      - name: Configure SSH
+        env:
+          VPS_HOST: ${{ secrets.MASIH_VPS_HOST }}
+          VPS_KEY: ${{ secrets.MASIH_VPS_SSH_KEY }}
+        run: |
+          set -euo pipefail
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$VPS_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H "$VPS_HOST" >> ~/.ssh/known_hosts
+
+      - name: Prepare deployment bundle
+        env:
+          BACKEND_ENV: ${{ secrets.MASIH_BACKEND_ENV }}
+          BACKEND_DOMAIN: ${{ vars.MASIH_BACKEND_DOMAIN }}
+          FRONTEND_URL: https://gaia-pr-1.masihmosavatmst.workers.dev
+        run: |
+          set -euo pipefail
+          {
+            printf '%s\n' "$BACKEND_ENV"
+            printf 'ENV=development\n'
+            printf 'HOST=https://%s\n' "$BACKEND_DOMAIN"
+            printf 'FRONTEND_URL=%s\n' "$FRONTEND_URL"
+          } > /tmp/masih-backend.env
+          base64 -w 0 /tmp/masih-backend.env > /tmp/masih-backend.env.b64
+          cat > /tmp/Caddyfile <<EOF
+          $BACKEND_DOMAIN {
+            encode zstd gzip
+            reverse_proxy 127.0.0.1:8000
+          }
+          EOF
+          base64 -w 0 /tmp/Caddyfile > /tmp/Caddyfile.b64
+
+      - name: Deploy backend stack
+        env:
+          VPS_HOST: ${{ secrets.MASIH_VPS_HOST }}
+          VPS_USER: ${{ secrets.MASIH_VPS_USER }}
+          BACKEND_DOMAIN: ${{ vars.MASIH_BACKEND_DOMAIN }}
+          ENV_B64: ${{ steps.noop.outputs.none }}
+        run: |
+          set -euo pipefail
+          env_b64="$(cat /tmp/masih-backend.env.b64)"
+          caddy_b64="$(cat /tmp/Caddyfile.b64)"
+          ssh "$VPS_USER@$VPS_HOST" "ENV_B64='$env_b64' CADDY_B64='$caddy_b64' BACKEND_DOMAIN='$BACKEND_DOMAIN' bash -s" <<'REMOTE'
+          set -euo pipefail
+
+          if ! command -v docker >/dev/null 2>&1; then
+            curl -fsSL https://get.docker.com | sh
+          fi
+
+          if command -v ufw >/dev/null 2>&1; then
+            ufw allow OpenSSH || true
+            ufw allow 80/tcp || true
+            ufw allow 443/tcp || true
+          fi
+
+          install -d -m 755 /opt/masih-gaia
+          cd /opt/masih-gaia
+
+          if [ ! -d repo/.git ]; then
+            git clone --branch masih-agent-v1 --single-branch https://github.com/masihmst93/gaia.git repo
+          else
+            cd repo
+            git fetch origin masih-agent-v1
+            git reset --hard origin/masih-agent-v1
+            cd ..
+          fi
+
+          mkdir -p repo/apps/api
+          printf '%s' "$ENV_B64" | base64 -d > repo/apps/api/.env
+          chmod 600 repo/apps/api/.env
+          printf '%s' "$CADDY_B64" | base64 -d > Caddyfile
+
+          cd repo
+          docker compose -f infra/docker/docker-compose.yml             --profile backend --profile worker             up -d --build             postgres redis jfs-meta-redis mongo chromadb rabbitmq searxng             embedding-sidecar gaia-backend arq_worker
+
+          docker rm -f gaia-caddy >/dev/null 2>&1 || true
+          docker run -d             --name gaia-caddy             --restart unless-stopped             --network host             -v /opt/masih-gaia/Caddyfile:/etc/caddy/Caddyfile:ro             -v gaia_caddy_data:/data             -v gaia_caddy_config:/config             caddy:2
+
+          for attempt in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8000/health >/dev/null; then
+              exit 0
+            fi
+            sleep 10
+          done
+
+          docker compose -f infra/docker/docker-compose.yml logs --tail=150 gaia-backend
+          exit 1
+          REMOTE
+
+      - name: Verify public API
+        env:
+          BACKEND_DOMAIN: ${{ vars.MASIH_BACKEND_DOMAIN }}
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 18); do
+            if curl -fsS --max-time 15 "https://$BACKEND_DOMAIN/health"; then
+              echo
+              echo "Backend ready: https://$BACKEND_DOMAIN"
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "::error::Public backend health check failed"
+          exit 1
+
+      - name: Next step
+        env:
+          BACKEND_DOMAIN: ${{ vars.MASIH_BACKEND_DOMAIN }}
+        run: |
+          {
+            echo "### Backend deployed"
+            echo ""
+            echo "Set Preview environment variable:"
+            echo "\`PREVIEW_API_BASE_URL=https://$BACKEND_DOMAIN/api/v1/\`"
+            echo ""
+            echo "Then rerun Deploy Web (Cloudflare)."
+          } >> "$GITHUB_STEP_SUMMARY"
