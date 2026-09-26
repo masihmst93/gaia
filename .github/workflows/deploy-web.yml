@@ -264,20 +264,34 @@ jobs:
           du -h apps/web/.open-next/worker.js
           du -sh apps/web/.open-next
 
-      - name: Create or update Cloudflare Worker Preview (pr-${{ github.event.number }})
+      - name: Deploy isolated PR worker (gaia-pr-${{ github.event.number }})
         id: cf_preview
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           set -euo pipefail
-          # Worker Previews can create the first preview before a production
-          # Worker exists. Wrangler 4.135+ is required for this command.
-          output="$(pnpm dlx wrangler@4.135.0 preview --name "pr-${{ github.event.number }}" --config apps/web/wrangler.preview.jsonc --json)"
+          worker_name="gaia-pr-${{ github.event.number }}"
+          output="$(pnpm dlx wrangler@4.135.0 deploy --name "$worker_name" --config apps/web/wrangler.preview.jsonc)"
           printf '%s\n' "$output"
-          json="$(printf '%s\n' "$output" | awk 'found || /^\{/ {found=1; print}')"
-          preview_url="$(printf '%s' "$json" | jq -er '.preview.urls[0] // .deployment.urls[0]')"
+          preview_url="$(printf '%s\n' "$output" | grep -Eo 'https://[^[:space:]]+workers\.dev' | tail -n 1)"
+          test -n "$preview_url" || { echo "::error::Could not extract workers.dev URL from Wrangler output"; exit 1; }
           echo "preview_url=$preview_url" >> "$GITHUB_OUTPUT"
+
+      - name: Verify preview serves the app
+        env:
+          PREVIEW_URL: ${{ steps.cf_preview.outputs.preview_url }}
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3 4 5 6; do
+            body="$(curl -fsSL --max-time 20 "$PREVIEW_URL" || true)"
+            if [ -n "$body" ] && ! printf '%s' "$body" | grep -q "There is nothing here yet"; then
+              printf '%s' "$body" | grep -qiE '<html|<!doctype|__next|next' && exit 0
+            fi
+            sleep 5
+          done
+          echo "::error::Preview URL did not serve the Next.js app: $PREVIEW_URL"
+          exit 1
 
       - name: Report preview duration
         if: always()
@@ -288,7 +302,7 @@ jobs:
           mins=$((dur/60)); secs=$((dur%60))
           {
             echo "### ⏱️ Preview deploy duration: ${mins}m ${secs}s (${dur}s)"
-            echo "Preview alias: \`pr-${{ github.event.number }}\`"
+            echo "Preview worker: \`gaia-pr-${{ github.event.number }}\`"
             echo "Preview URL: \`${{ steps.cf_preview.outputs.preview_url }}\`"
           } >> "$GITHUB_STEP_SUMMARY"
           echo "::notice title=Preview duration::${mins}m ${secs}s alias pr-${{ github.event.number }}"
