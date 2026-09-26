@@ -8,7 +8,10 @@ from dataclasses import dataclass
 
 
 @dataclass(frozen=True)
-class PersonalRoutine:\n    """A scheduled personal-agent routine shipped as a product default."""\n\n    id: str
+class PersonalRoutine:
+    """A scheduled personal-agent routine shipped as a product default."""
+
+    id: str
     title_fa: str
     title_en: str
     cron: str
