@@ -1,4 +1,4 @@
-import { useQueries, type UseQueryResult } from "@tanstack/react-query";
+import { type UseQueryResult, useQueries } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { Button, Skeleton, SkeletonGroup } from "heroui-native";
 import { useCallback } from "react";
@@ -550,5 +550,20 @@ export function DashboardScreen() {
     workflowsQuery,
   ]);
 
-  return <DashboardContent firstName={firstName} spacing={spacing} fontSize={fontSize} insets={insets} router={router} todosQuery={todosQuery} conversationsQuery={conversationsQuery} unreadQuery={unreadQuery} remindersQuery={remindersQuery} workflowsQuery={workflowsQuery} isRefreshing={isRefreshing} handleRefresh={handleRefresh} />;
+  return (
+    <DashboardContent
+      firstName={firstName}
+      spacing={spacing}
+      fontSize={fontSize}
+      insets={insets}
+      router={router}
+      todosQuery={todosQuery}
+      conversationsQuery={conversationsQuery}
+      unreadQuery={unreadQuery}
+      remindersQuery={remindersQuery}
+      workflowsQuery={workflowsQuery}
+      isRefreshing={isRefreshing}
+      handleRefresh={handleRefresh}
+    />
+  );
 }
