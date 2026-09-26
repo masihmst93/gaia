@@ -82,14 +82,26 @@ function buildDashboardSections(
     sections.push({
       icon: <Calendar03Icon className="w-7 h-7 text-blue-400" />,
       count: todaysMeetings,
-      label: dashboardLabel(isPersian, "جلسه", todaysMeetings, "meeting", "meetings"),
+      label: dashboardLabel(
+        isPersian,
+        "جلسه",
+        todaysMeetings,
+        "meeting",
+        "meetings",
+      ),
     });
   }
   if (tasksDue > 0) {
     sections.push({
       icon: <CheckmarkCircle02Icon className="w-7 h-7 text-emerald-400" />,
       count: tasksDue,
-      label: dashboardLabel(isPersian, "کار امروز", tasksDue, "task due", "tasks due"),
+      label: dashboardLabel(
+        isPersian,
+        "کار امروز",
+        tasksDue,
+        "task due",
+        "tasks due",
+      ),
     });
   }
   if (overdueTodosCount > 0) {
@@ -166,7 +178,8 @@ function DashboardSummary({
             {index < firstLineSections.length - 1 && <span>,</span>}
             {index === firstLineSections.length - 1 &&
               secondLineSections.length === 0 &&
-              hasTodayItems && !isPersian && <span> today</span>}
+              hasTodayItems &&
+              !isPersian && <span> today</span>}
             {index === firstLineSections.length - 1 &&
               secondLineSections.length === 0 &&
               !hasTodayItems && <span>.</span>}
@@ -182,10 +195,12 @@ function DashboardSummary({
             <span key={section.label}>
               <SummaryItem {...section} />
               {index < secondLineSections.length - 1 && <span>,</span>}
-              {index === secondLineSections.length - 2 && !isPersian && <span> and</span>}
-              {index === secondLineSections.length - 1 && hasTodayItems && !isPersian && (
-                <span> today.</span>
+              {index === secondLineSections.length - 2 && !isPersian && (
+                <span> and</span>
               )}
+              {index === secondLineSections.length - 1 &&
+                hasTodayItems &&
+                !isPersian && <span> today.</span>}
               {index === secondLineSections.length - 1 && !hasTodayItems && (
                 <span>.</span>
               )}
@@ -373,12 +388,19 @@ export default function HomePage() {
           />
         ) : (
           <p className="text-lg text-zinc-400">
-            {isPersian ? "امروزت هنوز خالیه — بیا برنامه‌اش رو بچینیم." : "Your day is clear — time to plan ahead!"}
+            {isPersian
+              ? "امروزت هنوز خالیه — بیا برنامه‌اش رو بچینیم."
+              : "Your day is clear — time to plan ahead!"}
           </p>
         )}
       </div>
 
-      <TodayOverview isPersian={isPersian} dailyProgress={dailyProgress} todayTasks={todayTasks} counts={counts} />
+      <TodayOverview
+        isPersian={isPersian}
+        dailyProgress={dailyProgress}
+        todayTasks={todayTasks}
+        counts={counts}
+      />
 
       <DashboardComposer isPersian={isPersian} />
 
