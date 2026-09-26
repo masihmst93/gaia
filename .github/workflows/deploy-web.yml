@@ -42,6 +42,7 @@ on:
       - "apps/web/**"
       - "libs/shared/ts/**"
       - "apps/web/wrangler.jsonc"
+      - "apps/web/wrangler.preview.jsonc"
       - "apps/web/open-next.config.ts"
       - "apps/web/next.config.mjs"
       - ".github/workflows/deploy-web.yml"
@@ -272,7 +273,7 @@ jobs:
           set -euo pipefail
           # Worker Previews can create the first preview before a production
           # Worker exists. Wrangler 4.135+ is required for this command.
-          output="$(pnpm dlx wrangler@4.135.0 preview --name "pr-${{ github.event.number }}" --config apps/web/wrangler.jsonc --json)"
+          output="$(pnpm dlx wrangler@4.135.0 preview --name "pr-${{ github.event.number }}" --config apps/web/wrangler.preview.jsonc --json)"
           printf '%s\n' "$output"
           json="$(printf '%s\n' "$output" | awk 'found || /^\{/ {found=1; print}')"
           preview_url="$(printf '%s' "$json" | jq -er '.preview.urls[0] // .deployment.urls[0]')"
