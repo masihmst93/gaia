@@ -285,8 +285,10 @@ jobs:
           set -euo pipefail
           for attempt in 1 2 3 4 5 6; do
             body="$(curl -fsSL --max-time 20 "$PREVIEW_URL" || true)"
-            if [ -n "$body" ] && ! printf '%s' "$body" | grep -q "There is nothing here yet"; then
-              printf '%s' "$body" | grep -qiE '<html|<!doctype|__next|next' && exit 0
+            if [ -n "$body" ] && ! grep -q "There is nothing here yet" <<<"$body"; then
+              if grep -qiE '<html|<!doctype|__next|next' <<<"$body"; then
+                exit 0
+              fi
             fi
             sleep 5
           done
