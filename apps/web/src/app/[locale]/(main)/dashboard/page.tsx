@@ -209,30 +209,102 @@ function TodayOverview({
   counts: ReturnType<typeof useHomePage>["counts"];
 }) {
   const router = useRouter();
+
   return (
     <>
       <section className="mb-8 grid gap-3 px-3 sm:grid-cols-3">
         <div className="rounded-2xl border border-zinc-800 bg-zinc-950/60 p-5 sm:col-span-2">
           <div className="mb-3 flex items-center justify-between gap-4">
-            <div><p className="text-sm text-zinc-500">{isPersian ? "پیشرفت امروز" : "Today's progress"}</p><p className="mt-1 text-3xl font-semibold text-white">{dailyProgress.percent}%</p></div>
+            <div>
+              <p className="text-sm text-zinc-500">
+                {isPersian ? "پیشرفت امروز" : "Today's progress"}
+              </p>
+              <p className="mt-1 text-3xl font-semibold text-white">
+                {dailyProgress.percent}%
+              </p>
+            </div>
           </div>
-          <div className="h-2 overflow-hidden rounded-full bg-zinc-800"><div className="h-full rounded-full bg-white" style={{ width: `${dailyProgress.percent}%` }} /></div>
+          <div className="h-2 overflow-hidden rounded-full bg-zinc-800">
+            <div
+              className="h-full rounded-full bg-white"
+              style={{ width: `${dailyProgress.percent}%` }}
+            />
+          </div>
         </div>
-        <button type="button" onClick={() => router.push("/c")} className="rounded-2xl border border-zinc-800 bg-zinc-950/60 p-5 text-start"><p className="text-sm text-zinc-500">{isPersian ? "دستیار روزانه" : "Daily assistant"}</p><p className="mt-2 text-lg font-medium text-white">{isPersian ? "برنامه امروز من را بچین" : "Plan my day"}</p></button>
+
+        <button
+          type="button"
+          onClick={() => router.push("/c")}
+          className="rounded-2xl border border-zinc-800 bg-zinc-950/60 p-5 text-start"
+        >
+          <p className="text-sm text-zinc-500">
+            {isPersian ? "دستیار روزانه" : "Daily assistant"}
+          </p>
+          <p className="mt-2 text-lg font-medium text-white">
+            {isPersian ? "برنامه امروز من را بچین" : "Plan my day"}
+          </p>
+        </button>
       </section>
+
       <section className="mb-8 grid gap-3 px-3 lg:grid-cols-[1.5fr_1fr]">
         <div className="rounded-2xl border border-zinc-800 bg-zinc-950/60 p-5">
-          <div className="mb-4 flex items-center justify-between"><h2 className="text-xl font-semibold text-white">{isPersian ? "کارهای امروز" : "Today's tasks"}</h2><button type="button" onClick={() => router.push("/todos")} className="text-sm text-zinc-400">{isPersian ? "مشاهده همه" : "View all"}</button></div>
-          <div className="space-y-2">{todayTasks.map(todo => <button key={todo.id} type="button" onClick={() => router.push(`/todos?todoId=${todo.id}`)} className="flex w-full items-center gap-3 rounded-xl border border-zinc-800/80 bg-zinc-900/40 px-4 py-3 text-start"><span className={`size-2.5 rounded-full ${todo.completed ? "bg-emerald-400" : "bg-zinc-600"}`} /><span className="min-w-0 flex-1 truncate text-sm text-zinc-200">{todo.title}</span></button>)}</div>
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-xl font-semibold text-white">
+              {isPersian ? "کارهای امروز" : "Today's tasks"}
+            </h2>
+            <button
+              type="button"
+              onClick={() => router.push("/todos")}
+              className="text-sm text-zinc-400"
+            >
+              {isPersian ? "مشاهده همه" : "View all"}
+            </button>
+          </div>
+
+          <div className="space-y-2">
+            {todayTasks.map((todo) => (
+              <button
+                key={todo.id}
+                type="button"
+                onClick={() => router.push(`/todos?todoId=${todo.id}`)}
+                className="flex w-full items-center gap-3 rounded-xl border border-zinc-800/80 bg-zinc-900/40 px-4 py-3 text-start"
+              >
+                <span
+                  className={`size-2.5 rounded-full ${
+                    todo.completed ? "bg-emerald-400" : "bg-zinc-600"
+                  }`}
+                />
+                <span className="min-w-0 flex-1 truncate text-sm text-zinc-200">
+                  {todo.title}
+                </span>
+              </button>
+            ))}
+          </div>
         </div>
-        <div className="rounded-2xl border border-zinc-800 bg-zinc-950/60 p-5"><h2 className="text-xl font-semibold text-white">{isPersian ? "وضعیت امروز" : "Today at a glance"}</h2><div className="mt-5 space-y-3 text-sm text-zinc-400"><p>{isPersian ? "جلسه" : "Meetings"}: {counts.todaysMeetings}</p><p>{isPersian ? "ایمیل خوانده‌نشده" : "Unread email"}: {counts.unreadEmailsCount}</p><p>{isPersian ? "عقب‌افتاده" : "Overdue"}: {counts.overdueTodosCount}</p></div></div>
+
+        <div className="rounded-2xl border border-zinc-800 bg-zinc-950/60 p-5">
+          <h2 className="text-xl font-semibold text-white">
+            {isPersian ? "وضعیت امروز" : "Today at a glance"}
+          </h2>
+          <div className="mt-5 space-y-3 text-sm text-zinc-400">
+            <p>
+              {isPersian ? "جلسه" : "Meetings"}: {counts.todaysMeetings}
+            </p>
+            <p>
+              {isPersian ? "ایمیل خوانده‌نشده" : "Unread email"}:{" "}
+              {counts.unreadEmailsCount}
+            </p>
+            <p>
+              {isPersian ? "عقب‌افتاده" : "Overdue"}: {counts.overdueTodosCount}
+            </p>
+          </div>
+        </div>
       </section>
     </>
   );
 }
 
 export default function HomePage() {
-  const router = useRouter();
   const params = useParams<{ locale?: string }>();
   const isPersian = params?.locale === "fa";
   const {
