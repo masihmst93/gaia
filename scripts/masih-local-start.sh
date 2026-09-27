@@ -54,7 +54,7 @@ for old, new in replacements.items():
 p.write_text(text)
 PY
 
-if ! grep -Eq '^GOOGLE_API_KEY=.+|^OPENROUTER_API_KEY=.+' apps/api/.env; then
+if ! grep -Eq '^GOOGLE_API_KEY=[^[:space:]]{8,}|^OPENROUTER_API_KEY=sk-or-' apps/api/.env; then
   echo
   echo "No LLM API key is configured."
   echo "Edit apps/api/.env and set ONE of:"
@@ -66,17 +66,17 @@ if ! grep -Eq '^GOOGLE_API_KEY=.+|^OPENROUTER_API_KEY=.+' apps/api/.env; then
 fi
 
 echo "Installing JavaScript dependencies..."
-corepack enable >/dev/null 2>&1 || true
-pnpm install
+mise exec -- corepack enable >/dev/null 2>&1 || true
+mise exec -- pnpm install
 
 echo "Installing API dependencies..."
 (
   cd apps/api
-  uv sync --group backend --group dev
+  mise exec -- uv sync --group backend --group dev
 )
 
 echo "Starting Docker infrastructure..."
-nx run docker:docker:up
+mise exec -- nx run docker:docker:up
 
 LOG="/tmp/masih-gaia-local.log"
 rm -f "$LOG"
