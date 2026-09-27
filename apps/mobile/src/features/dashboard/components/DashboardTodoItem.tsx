@@ -20,10 +20,10 @@ const PRIORITY_COLORS: Record<Priority, string> = {
 };
 
 const PRIORITY_LABELS: Record<Priority, string> = {
-  [Priority.HIGH]: "High",
-  [Priority.MEDIUM]: "Medium",
-  [Priority.LOW]: "Low",
-  [Priority.NONE]: "None",
+  [Priority.HIGH]: "زیاد",
+  [Priority.MEDIUM]: "متوسط",
+  [Priority.LOW]: "کم",
+  [Priority.NONE]: "بدون اولویت",
 };
 
 export function DashboardTodoItem({ todo, onToggled }: DashboardTodoItemProps) {

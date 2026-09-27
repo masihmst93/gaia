@@ -29,6 +29,7 @@ from app.agents.context.fetchers import (
     build_tracked_todos_block,
     build_workspace_session_banner,
 )
+from app.agents.context.masih_personal_agent import MASIH_PERSONAL_AGENT_INSTRUCTIONS
 from app.agents.context.section_context import SectionContext
 from app.agents.context.slots import PromptSlot
 from app.agents.context.text import (
@@ -68,6 +69,10 @@ class Section:
 
 
 # --- stable sections: change on a preference edit or a connect, not per turn ---
+
+
+async def _masih_personal_agent(_: SectionContext) -> str:
+    return MASIH_PERSONAL_AGENT_INSTRUCTIONS
 
 
 async def _user_identity(ctx: SectionContext) -> str:
@@ -175,6 +180,7 @@ async def _skills(ctx: SectionContext) -> str:
 #: run banners deliberately sort last so their directives land with recency,
 #: immediately before the conversation begins.
 SECTIONS: tuple[Section, ...] = (
+    Section("masih_personal_agent", PromptSlot.DYNAMIC_STABLE, ALL_TIERS, 5, _masih_personal_agent),
     Section("user_identity", PromptSlot.DYNAMIC_STABLE, ALL_TIERS, 10, _user_identity),
     Section("user_prefs", PromptSlot.DYNAMIC_STABLE, ALL_TIERS, 20, _user_prefs),
     # Comms only: the executor never opens a conversation. Stable rather than
